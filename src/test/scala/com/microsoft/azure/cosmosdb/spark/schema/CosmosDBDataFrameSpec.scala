@@ -120,10 +120,10 @@ class CosmosDBDataFrameSpec extends RequiresCosmosDB {
 
     sparkSession.sparkContext.parallelize(testDocuments).toDF().write.cosmosDB()
 
-    val host = CosmosDBDefaults().EMULATOR_ENDPOINT
-    val key = CosmosDBDefaults().EMULATOR_MASTERKEY
-    val dbName = CosmosDBDefaults().DATABASE_NAME
-    val collName = collectionName
+    val host = CosmosDBDefaults().CosmosDBEndpoint
+    val key = CosmosDBDefaults().CosmosDBKey
+    val dbName = CosmosDBDefaults().DatabaseName
+    val collName = getTestCollectionName
 
     val configMap = Map("Endpoint" -> host,
       "Masterkey" -> key,
@@ -222,10 +222,10 @@ class CosmosDBDataFrameSpec extends RequiresCosmosDB {
       map(x => new Document(s"{ id: '$x', ${CosmosDBDefaults().PartitionKeyName}: '$x' }"))).
       saveToCosmosDB()
 
-    val host = CosmosDBDefaults().EMULATOR_ENDPOINT
-    val key = CosmosDBDefaults().EMULATOR_MASTERKEY
-    val dbName = CosmosDBDefaults().DATABASE_NAME
-    val collName = collectionName
+    val host = CosmosDBDefaults().CosmosDBEndpoint
+    val key = CosmosDBDefaults().CosmosDBKey
+    val dbName = CosmosDBDefaults().DatabaseName
+    val collName = getTestCollectionName
 
     val configMap = Map("Endpoint" -> host,
       "Masterkey" -> key,
@@ -303,10 +303,10 @@ class CosmosDBDataFrameSpec extends RequiresCosmosDB {
   it should "support simple incremental view" in withSparkSession() { spark =>
     spark.sparkContext.parallelize((1 to documentCount).map(x => new Document(s"{ id: '$x' }"))).saveToCosmosDB()
 
-    val host = CosmosDBDefaults().EMULATOR_ENDPOINT
-    val key = CosmosDBDefaults().EMULATOR_MASTERKEY
-    val dbName = CosmosDBDefaults().DATABASE_NAME
-    val collName = collectionName
+    val host = CosmosDBDefaults().CosmosDBEndpoint
+    val key = CosmosDBDefaults().CosmosDBKey
+    val dbName = CosmosDBDefaults().DatabaseName
+    val collName = getTestCollectionName
 
     val readConfig = Config(Map("Endpoint" -> host,
       "Masterkey" -> key,
@@ -400,7 +400,8 @@ class CosmosDBDataFrameSpec extends RequiresCosmosDB {
         DataTypes.createStructField("_attachments", DataTypes.StringType, true)))
     }
 
-    df.schema should equal(expectedSchema)
+    df.schema.fields should contain theSameElementsAs expectedSchema.fields
+    expectedSchema.fields should contain theSameElementsAs df.schema.fields
     df.count() should equal(documentCount)
     df.filter(s"pkey = ${documentCount / 2}").map(x => x.getInt(x.fieldIndex("pkey"))).collect() should equal(Array(documentCount / 2))
     df.filter(s"pkey > ${documentCount / 2}").count() should equal(documentCount / 2)
@@ -451,7 +452,8 @@ class CosmosDBDataFrameSpec extends RequiresCosmosDB {
     val df = sparkSession.read.cosmosDB[SimpleDocument]()
     val reflectedSchema: StructType = ScalaReflection.schemaFor[SimpleDocument].dataType.asInstanceOf[StructType]
 
-    df.schema should equal(reflectedSchema)
+    df.schema.fields should contain theSameElementsAs reflectedSchema.fields
+    reflectedSchema.fields should contain theSameElementsAs df.schema.fields
     df.count() should equal(documentCount)
     df.filter(s"pkey > ${documentCount / 2}").count() should equal(documentCount / 2)
   }
@@ -541,7 +543,8 @@ class CosmosDBDataFrameSpec extends RequiresCosmosDB {
     }
 
     val df = sparkSession.read.cosmosDB()
-    df.schema should equal(expectedSchema)
+    df.schema.fields should contain theSameElementsAs expectedSchema.fields
+    expectedSchema.fields should contain theSameElementsAs df.schema.fields
     df.collect().length should equal(documentCount)
   }
 }
