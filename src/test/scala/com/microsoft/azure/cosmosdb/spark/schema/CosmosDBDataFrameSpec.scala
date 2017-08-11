@@ -70,7 +70,7 @@ class CosmosDBDataFrameSpec extends RequiresCosmosDB {
 
     val config: Config = Config(sc)
     val databaseName: String = config.get(CosmosDBConfig.Database).get
-    val collectionName: String = "NewCollection"
+    val collectionName: String = String.format("NewCollection-%s", System.currentTimeMillis().toString)
     cosmosDBDefaults.createCollection(databaseName, collectionName)
     var configMap: collection.Map[String, String] = config.asOptions
     configMap = configMap.updated(CosmosDBConfig.Collection, collectionName)

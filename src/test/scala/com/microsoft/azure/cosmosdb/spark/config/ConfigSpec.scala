@@ -65,7 +65,7 @@ class ConfigSpec extends RequiresCosmosDB {
       "Masterkey" -> CosmosDBDefaults().CosmosDBKey,
       "Database" -> CosmosDBDefaults().DatabaseName,
       "Collection" -> getTestCollectionName,
-      "ConsistencyLevel" -> "Strong",
+      "ConsistencyLevel" -> "Eventual",
       "conNeCtIoNMODE" -> "Gateway",
       "upsert" -> "true",
       "schema_samplingratio" -> "0.5",
